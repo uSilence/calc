@@ -19,7 +19,7 @@ public class Calc extends JFrame {
 		newButton();
 		choiceLayout(GROUP_LAYOUT);
 		addListeners();
-		eliminatetextField();
+		eliminateTextField();
 
 		groupLayout.setAutoCreateContainerGaps(true);
 		groupLayout.setAutoCreateGaps(true);
@@ -40,8 +40,8 @@ public class Calc extends JFrame {
 	//中缀表达式转成后缀表达式
 	private static String infixToSuffix(String infix) {
 		Stack<Character> stack = new Stack<Character>();
-		String suffix; // 最终需要的后缀表达式
 		StringBuilder suffixSb = new StringBuilder(); // 循环中的中间变量，最终转换为suffix字符串
+		String suffix; // 最终需要的后缀表达式
 		int length = infix.length();
 		for (int i = 0; i < length; i++) {
 			Character temp;
@@ -144,16 +144,16 @@ public class Calc extends JFrame {
 	}
 
 	private static double caculate(double x, double y, String simble) {
-		if (simble.trim().equals("+")) {
+		if (simble.equals("+")) {
 			return x + y;
 		}
-		if (simble.trim().equals("-")) {
+		if (simble.equals("-")) {
 			return x - y;
 		}
-		if (simble.trim().equals("*")) {
+		if (simble.equals("*")) {
 			return x * y;
 		}
-		if (simble.trim().equals("/")) {
+		if (simble.equals("/")) {
 			return x / y;
 		}
 		return 0;
@@ -190,6 +190,7 @@ public class Calc extends JFrame {
 	private JButton button18;
 	private JButton button19;
 	private JButton button20;
+	private JButton button21; // 添加自定义运算符按钮
 
 	private JFrame frame = new JFrame("这是一个计算器");
 	private JPanel panel = new JPanel();
@@ -230,11 +231,12 @@ public class Calc extends JFrame {
 		button18 = Calc.setButton("(");
 		button19 = Calc.setButton(")");
 		button20 = Calc.setButton("C");
+		button21 = Calc.setButton("addOperator");
 	}
 
 	// 初始化变量状态：清空textField
-	private void eliminatetextField() {
-		textField.setText("");
+	private void eliminateTextField() {
+		textField.setText("0");
 		textField.setEditable(false); // 设置为只读状态：只能通过点击Button输入
 		textField.setHorizontalAlignment(JTextField.RIGHT); // 靠右显示
 	}
@@ -248,6 +250,13 @@ public class Calc extends JFrame {
 		}
 	}
 
+	// 添加自定义Button方法
+	private void addButton(int function) {
+		if (function == 1) {
+
+		}
+	}
+
 	// 计算器界面显示
 	private void showCalc() {
 		frame.setVisible(true);
@@ -258,24 +267,46 @@ public class Calc extends JFrame {
 	class ButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 
-			//boolean beginWord = false; // 文本框中开始即显示0，不为空
-			boolean doCalc = false; // 判断是否按下了=键进行计算
-
+			//boolean doCalc = false;
 			String oldWord = textField.getText(); // 文本框中原本已经输入进去的内容
 			String newWord = ((JButton) e.getSource()).getText(); // 点击按钮产生的新内容
 			String input = oldWord + newWord;
 
-			/*if(!newWord.equals("")){ // 刚生成计算器，并且有按键被按下时
-				beginWord = true;
+			textField.setText(input);
+
+			// 刚生成计算器时、进行了清除操作后，默认显示一个0，当有输入时，需要覆盖它（若输入的值为0-1之间的小数，则不需要覆盖）
+			if (oldWord.equals("0") && !newWord.equals("") && !newWord.equals(".")) {
+				textField.setText(newWord);
+			}
+
+			// 输入等号时输出结果
+			try {
+				if (newWord.equals("=")) {
+					String result = String.valueOf(Calc.stringToArithmetic(oldWord)); // 计算结果为double，转换成String
+					textField.setText(result);
+					//doCalc = true;
+				}
+			} catch (Exception e1) {
+				textField.setText("your input is illegal..."); // 非法输入提示信息
+			}
+
+			// 进行一次运算之后，再输入操作数，需要覆盖原来的内容（若输入操作符，则不需要覆盖）
+			// BUG
+/*			String pattern = "^(-?\\d+)(\\.\\d+)?$"; // 浮点数
+			boolean isMatch = Pattern.matches(pattern, oldWord);
+			String pattern2 = "^[0-9]*$"; // 数字
+			boolean isMatch2 = Pattern.matches(pattern2, newWord);
+			if((isMatch && isMatch2 && !oldWord.equals("0")) || oldWord.contains("illegal") || oldWord.contains("null") || oldWord.contains("function")){
+				textField.setText(newWord);
 			}*/
 
-			textField.setText(input);
 
 			// 特殊按钮
 			// ←键：删除键
 			for (int i = 0; i < oldWord.length(); i++) {
 				if (newWord.equals("←")) { // 按下删除键时，文本内容减少最后一位
 					textField.setText(oldWord.substring(0, oldWord.length() - 1));
+
 				}
 			}
 			// 为空时，不能再进行删除操作
@@ -286,26 +317,16 @@ public class Calc extends JFrame {
 			if (newWord.equals("C")) {
 				textField.setText("0");
 			}
+			// addOperator键
+			if (newWord.equals("addOperator")) {
+				textField.setFont(new Font("宋体", Font.PLAIN, 13));
+				textField.setText("input which function you want to add: 1、1/x; 2、%.");
+				// 输入1
+				if (oldWord.equals("input which function you want to add: 1、1/x; 2、%.1")) {
+					//textField.setText("function1");
 
-			// =键：一次运算结束后，再输入，需要先清除文本框中的内容
-
-			try {
-				if (newWord.equals("=")) { // 输入等号时输出结果
-					String result = String.valueOf(Calc.stringToArithmetic(oldWord));
-					textField.setText(result); // 计算结果为double，转换成String
-					doCalc = true;
 				}
-			} catch (Exception e1) {
-				textField.setText("your input is illegal..."); // 非法输入提示信息
-			}
-
-			boolean click = false;
-			//String newWord = ((JButton) e.getSource()).getText();
-			if (!newWord.equals("") && newWord.equals("1")) { // 按下 且 非等号键
-				click = true;
-			}
-			if (doCalc && click) { // 进行过一次计算 且 以上
-				textField.setText(newWord);
+				// 输入2
 			}
 
 		}
@@ -339,6 +360,7 @@ public class Calc extends JFrame {
 		addListener(button18);
 		addListener(button19);
 		addListener(button20);
+		addListener(button21);
 	}
 
 	// 实现计算器界面
@@ -376,6 +398,9 @@ public class Calc extends JFrame {
 		addComponents(frame, button18, 1, 6, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH);
 		addComponents(frame, button19, 2, 6, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH);
 		addComponents(frame, button20, 3, 6, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH);
+
+		// 第6行：添加自定义运算符按钮
+		addComponents(frame, button21, 0, 7, 4, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH);
 	}
 
 	private void groupLayoutDrawCalc() {
@@ -413,7 +438,9 @@ public class Calc extends JFrame {
 				.addGroup(hParallelGroup1).addGroup(hParallelGroup2).addGroup(hParallelGroup3).addGroup(hParallelGroup4);
 		//各组件上下排列
 		GroupLayout.ParallelGroup hParallelGroup = groupLayout.createParallelGroup()
-				.addComponent(textField, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Integer.MAX_VALUE).addGroup(hSequentialGroup);
+				.addComponent(textField, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Integer.MAX_VALUE)
+				.addGroup(hSequentialGroup)
+				.addComponent(button21, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Integer.MAX_VALUE);
 		//指定布局的水平坐标
 		groupLayout.setHorizontalGroup(hParallelGroup);
 
@@ -446,7 +473,8 @@ public class Calc extends JFrame {
 
 		GroupLayout.SequentialGroup vSequentialGroup = groupLayout.createSequentialGroup()
 				.addComponent(textField, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Integer.MAX_VALUE)
-				.addGroup(vParallelGroup1).addGroup(vParallelGroup2).addGroup(vParallelGroup3).addGroup(vParallelGroup4).addGroup(vParallelGroup5);
+				.addGroup(vParallelGroup1).addGroup(vParallelGroup2).addGroup(vParallelGroup3).addGroup(vParallelGroup4).addGroup(vParallelGroup5)
+				.addComponent(button21, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Integer.MAX_VALUE);
 		groupLayout.setVerticalGroup(vSequentialGroup);
 
 		/*frame.setContentPane(panel);
